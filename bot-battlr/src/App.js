@@ -1,70 +1,54 @@
-// App.js
-
 import "./App.css";
-import "bootstrap/dist/css/bootstrap.css";
-import Navbar from "./components/Navbar";
-import Botshow from "./components/Botshow";
-import { useEffect, useState } from "react";
-import BotCollection from "./components/BotCollection";
+import React, { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import Botcolletion from "./components/botcolletction/botcollection";
+import Yourbotarmy from "./components/yourbotarmy/yourbotarmy";
+import BotSpecs from "./components/botspecs/BotSpecs";
+
 function App() {
-  const [bots, setBots] = useState([]);
+  const [botcolletion, setBotcolletion] = useState([]);
+  const [armyBots, setArmyBots] = useState([]);
+  const [botSpecsShown, setBotspecsShown] = useState({});
 
   useEffect(() => {
-    fetch("http://localhost:4000/bots")
-      .then((response) => response.json())
-      .then((bots) => {
-        setBots(bots);
+    fetch("http://localhost:8001/bots")
+      .then((resp) => resp.json())
+      .then((data) => {
+        setBotcolletion(data.bots);
       });
   }, []);
 
-  function enlistBot(bot) {
-    setBots(bots.map((b) => (b.id === bot.id ? { ...b, army: true } : b)));
-  }
-
-  function removeBot(bot) {
-    setBots(bots.map((b) => (b.id === bot.id ? { ...b, army: false } : b)));
-  }
-
-  function deleteBot(bot) {
-    const deletedBot = bots.filter((b) => b.id !== bot.id);
-    setBots((bots) => deletedBot);
-
-    // Delete in DB
-    fetch(`http://localhost:4000/bots/${bot.id}`, {
-      method: "DELETE",
-    })
-      .then((response) => response.json())
-      .then((result) => console.log(result));
-  }
-
   return (
-    <>
-      <Navbar />
-
-      <section className="jumbotron text-center">
-        <div className="container">
-          <div className="row">
-            <Botshow
-              records={bots.filter((b) => b.army)}
-              removeBot={removeBot}
-              deleteBot={deleteBot}
+    <div className="App">
+      <header>Bot Battlr</header>
+      <Yourbotarmy armyBots={armyBots} setArmyBots={setArmyBots} />
+      <Routes>
+        <Route
+          exact
+          path="/"
+          element={
+            <Botcolletion
+              setBotspecsShown={setBotspecsShown}
+              setArmyBots={setArmyBots}
+              armyBots={armyBots}
+              botcolletion={botcolletion}
+              setBotcolletion={setBotcolletion}
             />
-          </div>
-        </div>
-      </section>
-
-      <div className="album py-5 bg-light">
-        <div className="container">
-          <div className="row">
-            <BotCollection
-              records={bots}
-              enlistBot={enlistBot}
-              deleteBot={deleteBot}
+          }
+        />
+        <Route
+          exact
+          path="/botspecs"
+          element={
+            <BotSpecs
+              botSpecsShown={botSpecsShown}
+              setArmyBots={setArmyBots}
+              armyBots={armyBots}
             />
-          </div>
-        </div>
-      </div>
-    </>
+          }
+        />
+      </Routes>
+    </div>
   );
 }
 
